@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -80,6 +81,7 @@ import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.lifecycle.ViewModel
@@ -861,7 +863,7 @@ fun PeopleScreen(
     ) { innerPadding ->
         Column(
             modifier = Modifier
-                .padding(innerPadding)
+                .padding(top = innerPadding.calculateTopPadding())
                 .padding(horizontal = 8.dp),
         ) {
             HorizontalPager(
@@ -899,6 +901,7 @@ fun PeopleScreen(
                                     .fillMaxSize()
                                     .pageTurnViewportWithGuide(pageTurnTarget)
                                     .testTag(PEOPLE_SCREEN_ANSWERS_LIST_TAG),
+                                contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
                                 key = { it.id },
                             ) {
                                 FeedCard(
@@ -936,6 +939,7 @@ fun PeopleScreen(
                                     .fillMaxSize()
                                     .pageTurnViewportWithGuide(pageTurnTarget)
                                     .testTag(PEOPLE_SCREEN_ARTICLES_LIST_TAG),
+                                contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
                                 key = { it.id },
                             ) {
                                 FeedCard(
@@ -962,6 +966,7 @@ fun PeopleScreen(
                                 .fillMaxSize()
                                 .pageTurnViewportWithGuide(pageTurnTarget)
                                 .testTag(PEOPLE_SCREEN_ACTIVITIES_LIST_TAG),
+                                contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
                         ) {
                             FeedCard(
                                 it,
@@ -984,6 +989,7 @@ fun PeopleScreen(
                                 .fillMaxSize()
                                 .pageTurnViewportWithGuide(pageTurnTarget)
                                 .testTag(PEOPLE_SCREEN_COLLECTIONS_LIST_TAG),
+                                contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
                             key = { it.id },
                         ) { collection ->
                             CollectionListItem(
@@ -1005,6 +1011,7 @@ fun PeopleScreen(
                                 .fillMaxSize()
                                 .pageTurnViewportWithGuide(pageTurnTarget)
                                 .testTag(PEOPLE_SCREEN_QUESTIONS_LIST_TAG),
+                                contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
                             key = { it.id },
                         ) { question ->
                             QuestionListItem(
@@ -1026,6 +1033,7 @@ fun PeopleScreen(
                                 .fillMaxSize()
                                 .pageTurnViewportWithGuide(pageTurnTarget)
                                 .testTag(PEOPLE_SCREEN_PINS_LIST_TAG),
+                                contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
                             key = { it.id },
                         ) { pin ->
                             PinListItem(
@@ -1048,6 +1056,7 @@ fun PeopleScreen(
                                 .fillMaxSize()
                                 .pageTurnViewportWithGuide(pageTurnTarget)
                                 .testTag(PEOPLE_SCREEN_COLUMNS_LIST_TAG),
+                                contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
                             key = { it.id },
                         ) { column ->
                             ColumnListItem(
@@ -1069,6 +1078,7 @@ fun PeopleScreen(
                                 .fillMaxSize()
                                 .pageTurnViewportWithGuide(pageTurnTarget)
                                 .testTag(PEOPLE_SCREEN_FOLLOWERS_LIST_TAG),
+                                contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
                             key = { it.id },
                         ) { people ->
                             PeopleListItem(
@@ -1091,6 +1101,7 @@ fun PeopleScreen(
                                 .fillMaxSize()
                                 .pageTurnViewportWithGuide(pageTurnTarget)
                                 .testTag(PEOPLE_SCREEN_FOLLOWING_LIST_TAG),
+                                contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
                             key = { it.id },
                         ) { people ->
                             PeopleListItem(
@@ -1106,6 +1117,7 @@ fun PeopleScreen(
                             viewModel = viewModel,
                             listState = listState,
                             pageTurnTarget = pageTurnTarget,
+                            bottomContentPadding = innerPadding.calculateBottomPadding(),
                             onLoadMore = { subscriptionPage ->
                                 when (subscriptionPage) {
                                     0 -> viewModel.followingColumnsFeedModel.loadMore(paginationEnvironment)
@@ -1130,6 +1142,7 @@ private fun FollowingSubscriptionsPage(
     onLoadMore: (Int) -> Unit,
     listState: LazyListState,
     pageTurnTarget: PageTurnTarget,
+    bottomContentPadding: Dp = 0.dp,
     modifier: Modifier = Modifier,
 ) {
     var selectedPage by rememberSaveable { mutableIntStateOf(0) }
@@ -1179,6 +1192,7 @@ private fun FollowingSubscriptionsPage(
                     .fillMaxSize()
                     .pageTurnViewportWithGuide(pageTurnTarget)
                     .testTag(PEOPLE_SCREEN_SUBSCRIPTIONS_LIST_TAG),
+                contentPadding = PaddingValues(bottom = bottomContentPadding + 8.dp),
                 key = { it.id },
             ) { column ->
                 ColumnListItem(
@@ -1197,6 +1211,7 @@ private fun FollowingSubscriptionsPage(
                     .fillMaxSize()
                     .pageTurnViewportWithGuide(pageTurnTarget)
                     .testTag(PEOPLE_SCREEN_SUBSCRIPTIONS_LIST_TAG),
+                contentPadding = PaddingValues(bottom = bottomContentPadding + 8.dp),
                 key = { it.displayId },
             ) { topic ->
                 FollowedTopicListItem(topic)
@@ -1212,6 +1227,7 @@ private fun FollowingSubscriptionsPage(
                     .fillMaxSize()
                     .pageTurnViewportWithGuide(pageTurnTarget)
                     .testTag(PEOPLE_SCREEN_SUBSCRIPTIONS_LIST_TAG),
+                contentPadding = PaddingValues(bottom = bottomContentPadding + 8.dp),
                 key = { it.id },
             ) { question ->
                 FollowedQuestionListItem(question)
@@ -1227,6 +1243,7 @@ private fun FollowingSubscriptionsPage(
                     .fillMaxSize()
                     .pageTurnViewportWithGuide(pageTurnTarget)
                     .testTag(PEOPLE_SCREEN_SUBSCRIPTIONS_LIST_TAG),
+                contentPadding = PaddingValues(bottom = bottomContentPadding + 8.dp),
                 key = { it.id },
             ) { collection ->
                 CollectionListItem(

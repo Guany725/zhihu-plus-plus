@@ -265,10 +265,12 @@ fun QuestionScreen(
                 key = { it.stableKey },
                 listState = listState,
                 modifier = Modifier
-                    .padding(innerPadding)
                     .pageTurnViewportWithGuide(pageTurnTarget)
                     .testTag(QUESTION_SCREEN_LIST_TAG),
-                contentPadding = PaddingValues(bottom = readingPlayerOverlayPadding),
+                contentPadding = PaddingValues(
+                    top = innerPadding.calculateTopPadding(),
+                    bottom = innerPadding.calculateBottomPadding() + readingPlayerOverlayPadding,
+                ),
                 footer = ProgressIndicatorFooter,
                 topContent = {
                     item {

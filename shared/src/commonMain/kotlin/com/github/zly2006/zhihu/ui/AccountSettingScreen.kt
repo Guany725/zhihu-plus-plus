@@ -195,11 +195,14 @@ fun AccountSettingScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(innerPadding)
+                // 底栏悬浮在内容之上，内容要能滚到玻璃下面才能被采样到。
+                .padding(top = innerPadding.calculateTopPadding())
                 .testTag(ACCOUNT_SETTINGS_SCROLL_TAG)
                 .pageTurnViewportWithGuide(pageTurnTarget)
                 .verticalScroll(scrollState)
-                .padding(padding),
+                .padding(padding)
+                // 内容可以滚到悬浮底栏下面，但最后一项仍要能被滚到玻璃上方。
+                .padding(bottom = innerPadding.calculateBottomPadding()),
         ) {
             LaunchedEffect(data.login, refreshAccountProfileOnEnter) {
                 if (refreshAccountProfileOnEnter && data.login) {

@@ -207,7 +207,9 @@ class ZhihuMainNavigationInstrumentedTest {
             .edit(commit = true) { putBoolean("developer", true) }
         composeRule.launchZhihuMain(startDestination = Account.name)
         composeRule.waitUntilTabSelected("nav_tab_account")
-        composeRule.onNodeWithTag("accountSettings.developer").performScrollTo().performClick()
+        composeRule.onNodeWithTag("accountSettings.developer").performScrollTo()
+        // 底栏悬浮在列表之上，触摸会被底栏标签命中；这里用语义点击验证返回栈归属。
+        composeRule.onNodeWithTag("accountSettings.developer").performSemanticsAction(SemanticsActions.OnClick)
         composeRule.onNodeWithTag("developerSettings/colorScheme").performScrollTo().performClick()
         composeRule.onNodeWithText("Primary").assertIsDisplayed()
         composeRule.runOnIdle { composeRule.activity.onBackPressedDispatcher.onBackPressed() }
