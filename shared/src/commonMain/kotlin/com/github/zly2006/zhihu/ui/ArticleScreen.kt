@@ -446,9 +446,6 @@ fun ArticleScreen(
         } else {
             null
         }
-        // 首帧先不绘制玻璃层，等测量完成后再挂上，避免创建离屏层时被首帧基准场景打断。
-        var glassReady by remember { mutableStateOf(false) }
-        LaunchedEffect(Unit) { glassReady = true }
         // 记录历史最大滚动范围，避免顶栏展开/收起时 maxValue 短暂变化导致 scrollBehavior 抖动。
         var scrollStateMaxValue by remember { mutableIntStateOf(0) }
         LaunchedEffect(scrollState) {
@@ -591,16 +588,8 @@ fun ArticleScreen(
                             },
                             scrollBehavior = if (scrollStateMaxValue > 0) scrollBehavior else null,
                             colors = TopAppBarDefaults.topAppBarColors().copy(
-                                containerColor = if (glassBackdrop != null) {
-                                    Color.Transparent
-                                } else {
-                                    MaterialTheme.colorScheme.surface.copy(alpha = 0.86f)
-                                },
-                                scrolledContainerColor = if (glassBackdrop != null) {
-                                    Color.Transparent
-                                } else {
-                                    MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.9f)
-                                },
+                                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.86f),
+                                scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.9f),
                             ),
                         )
                     }
@@ -919,268 +908,246 @@ fun ArticleScreen(
             },
         ) { innerPadding ->
             CompositionLocalProvider(LocalBringIntoViewSpec provides articleBringIntoViewSpec) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    Box(
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .glassBackdropSource(glassBackdrop),
+                ) {
+                    Column(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .glassBackdropSource(glassBackdrop),
+                            .padding(horizontal = 16.dp)
+                            .verticalScroll(scrollState)
+                            .padding(innerPadding)
+                            .padding(top = 8.dp),
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp)
-                                .verticalScroll(scrollState)
-                                .padding(innerPadding)
-                                .padding(top = 8.dp),
-                        ) {
-                            if (isImmersiveMode && viewModel.authorName.isNotBlank()) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            navigator.onNavigate(
-                                                com.github.zly2006.zhihu.navigation.Person(
-                                                    id = viewModel.authorId,
-                                                    urlToken = viewModel.authorUrlToken,
-                                                    name = viewModel.authorName,
-                                                ),
-                                            )
-                                        }.padding(vertical = 8.dp),
-                                ) {
-                                    if (viewModel.authorAvatarSrc.isNotBlank()) {
-                                        AsyncImage(
-                                            model = viewModel.authorAvatarSrc,
-                                            contentDescription = "作者头像",
-                                            modifier = Modifier
-                                                .size(24.dp)
-                                                .clip(CircleShape),
+                        if (isImmersiveMode && viewModel.authorName.isNotBlank()) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        navigator.onNavigate(
+                                            com.github.zly2006.zhihu.navigation.Person(
+                                                id = viewModel.authorId,
+                                                urlToken = viewModel.authorUrlToken,
+                                                name = viewModel.authorName,
+                                            ),
                                         )
-                                    } else {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(24.dp)
-                                                .clip(CircleShape)
-                                                .background(MaterialTheme.colorScheme.surfaceVariant),
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = viewModel.authorName,
-                                        style = MaterialTheme.typography.labelLarge,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
+                                    }.padding(vertical = 8.dp),
+                            ) {
+                                if (viewModel.authorAvatarSrc.isNotBlank()) {
+                                    AsyncImage(
+                                        model = viewModel.authorAvatarSrc,
+                                        contentDescription = "作者头像",
+                                        modifier = Modifier
+                                            .size(24.dp)
+                                            .clip(CircleShape),
+                                    )
+                                } else {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(24.dp)
+                                            .clip(CircleShape)
+                                            .background(MaterialTheme.colorScheme.surfaceVariant),
                                     )
                                 }
-                                Spacer(modifier = Modifier.height(8.dp))
-                            }
-
-                            @Suppress("UnusedReceiverParameter") // 确保竖式布局
-                            @Composable
-                            fun ColumnScope.DateTexts() {
+                                Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    "发布于 " + formatFullDateTime(viewModel.createdAt),
+                                    text = viewModel.authorName,
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+
+                        @Suppress("UnusedReceiverParameter") // 确保竖式布局
+                        @Composable
+                        fun ColumnScope.DateTexts() {
+                            Text(
+                                "发布于 " + formatFullDateTime(viewModel.createdAt),
+                                color = Color.Gray,
+                                fontSize = 11.sp,
+                            )
+                            if (viewModel.createdAt != viewModel.updatedAt) {
+                                Text(
+                                    "编辑于 " + formatFullDateTime(viewModel.updatedAt),
                                     color = Color.Gray,
                                     fontSize = 11.sp,
                                 )
-                                if (viewModel.createdAt != viewModel.updatedAt) {
-                                    Text(
-                                        "编辑于 " + formatFullDateTime(viewModel.updatedAt),
-                                        color = Color.Gray,
-                                        fontSize = 11.sp,
-                                    )
-                                }
-                            }
-
-                            @Composable
-                            fun ColumnScope.ArticleVotersSocialCredit() {
-                                val contentLabel = when (article.type) {
-                                    ArticleType.Answer -> "回答"
-                                    ArticleType.Article -> "文章"
-                                }
-                                val hasVotersSocialCredit = viewModel.votersTotal > 0
-                                if (!hasVotersSocialCredit && viewModel.aigcSupportVoterCount <= 0) return
-                                Spacer(modifier = Modifier.height(8.dp))
-                                if (hasVotersSocialCredit) {
-                                    val text = viewModel.votersSocialText.ifBlank {
-                                        "${formatCompactCount(viewModel.votersTotal)} 人赞同了该$contentLabel"
-                                    }
-                                    val votersTextModifier = if (article.type == ArticleType.Answer) {
-                                        Modifier.clickable {
-                                            showVoters = true
-                                            if (viewModel.voters.isEmpty()) {
-                                                viewModel.loadMoreVoters(environment, reset = true)
-                                            }
-                                        }
-                                    } else {
-                                        Modifier
-                                    }
-                                    Text(
-                                        text = text,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = votersTextModifier,
-                                    )
-                                }
-                                if (viewModel.aigcSupportVoterCount > 0) {
-                                    if (hasVotersSocialCredit) {
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                    }
-                                    Text(
-                                        text = "有 ${formatCompactCount(viewModel.aigcSupportVoterCount)} 人认为此${contentLabel}包含AIGC内容",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.error,
-                                    )
-                                }
-                            }
-
-                            if (viewModel.content.isNotEmpty() || viewModel.attachment != null) {
-                                if (article.type == ArticleType.Article && viewModel.topics.isNotEmpty()) {
-                                    FlowRow(
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                                    ) {
-                                        viewModel.topics.forEach { topic ->
-                                            androidx.compose.material3.FilterChip(
-                                                selected = false,
-                                                onClick = { navigator.onNavigate(Topic(topic.id, topic.name)) },
-                                                label = { Text("# ${topic.name}") },
-                                            )
-                                        }
-                                    }
-                                    Spacer(Modifier.height(12.dp))
-                                }
-                                val hasPinnedDate = pinAnswerDate
-                                val hasSocialCredit = viewModel.votersTotal > 0 || viewModel.aigcSupportVoterCount > 0
-                                val endorsements = viewModel.endorsements
-                                val hasEndorsements = endorsements.isNotEmpty()
-                                if (hasPinnedDate || hasSocialCredit || hasEndorsements) {
-                                    Column(
-                                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                                        horizontalAlignment = Alignment.Start,
-                                    ) {
-                                        if (hasPinnedDate) {
-                                            DateTexts()
-                                        }
-                                        ArticleVotersSocialCredit()
-                                        if (hasEndorsements) {
-                                            if (hasPinnedDate || hasSocialCredit) {
-                                                Spacer(modifier = Modifier.height(8.dp))
-                                            }
-                                            FlowRow(
-                                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                                verticalArrangement = Arrangement.spacedBy(8.dp),
-                                            ) {
-                                                endorsements.forEach { endorsement ->
-                                                    AnswerEndorsementChip(endorsement)
-                                                }
-                                            }
-                                        }
-                                    }
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                }
-                                if (useWebView && isLegacyWebViewSupported) {
-                                    // WebView 正文渲染已经废弃，只保留为紧急回退路径；正文外 UI 不再为它单独分支。
-                                    ArticleWebViewContent(
-                                        article = article,
-                                        html = viewModel.content,
-                                        title = viewModel.title,
-                                        scrollState = scrollState,
-                                        rememberedScrollY = viewModel.rememberedScrollY,
-                                        rememberedScrollYSync = viewModel.rememberedScrollYSync,
-                                        onRememberedScrollYSyncChange = { viewModel.rememberedScrollYSync = it },
-                                        onImageLoadFailed = { userMessages.showMessage("图片加载失败，请向开发者反馈") },
-                                        onDoubleTap = ::handleAnswerDoubleTap,
-                                    )
-                                    Column(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalAlignment = Alignment.End,
-                                    ) {
-                                        if (!pinAnswerDate) {
-                                            DateTexts()
-                                        }
-                                        if (viewModel.ipInfo != null) {
-                                            Text(
-                                                "IP属地：${viewModel.ipInfo}",
-                                                color = Color.Gray,
-                                                fontSize = 11.sp,
-                                            )
-                                        }
-                                    }
-                                    Spacer(modifier = Modifier.height((16 + 36).dp))
-                                } else {
-                                    RenderMarkdown(
-                                        html = viewModel.content,
-                                        modifier = Modifier
-                                            .testTag("article_content")
-                                            .articleMarkdownSelectionWorkaround(),
-                                        scrollState = scrollState,
-                                        selectable = true,
-                                        enableScroll = false,
-                                        useTiqianRenderer = useTiqianMarkdown,
-                                        header = {},
-                                        footer = {
-                                            ArticleVideoAttachmentContent(viewModel.attachment)
-                                            Column(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                horizontalAlignment = Alignment.End,
-                                            ) {
-                                                if (!pinAnswerDate) {
-                                                    DateTexts()
-                                                }
-                                                if (viewModel.ipInfo != null) {
-                                                    Text(
-                                                        "IP属地：${viewModel.ipInfo}",
-                                                        color = Color.Gray,
-                                                        fontSize = 11.sp,
-                                                    )
-                                                }
-                                            }
-                                            ContentEndMarker()
-                                            Spacer(modifier = Modifier.height((16 + 36).dp))
-                                        },
-                                    )
-                                }
                             }
                         }
-                        Spacer(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(innerPadding)
-                                .pageTurnViewportWithGuide(pageTurnTarget),
-                        )
-                        // 状态栏渐变遮罩，仅 duo3 路径需要；主视觉路径不绘制。
-                        val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-                        val surfaceColor = MaterialTheme.colorScheme.surfaceContainer
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(statusBarHeight + 16.dp)
-                                .background(
-                                    Brush.verticalGradient(smoothGradient(surfaceColor, 0.8f)),
-                                ),
-                        ) {}
-                    }
-                    if (glassReady && glassBackdrop != null && !isImmersiveMode && topBarState.heightPx > 0f) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(with(LocalDensity.current) { topBarState.heightPx.toDp() })
-                                .liquidGlass(
-                                    glassBackdrop,
-                                    RectangleShape,
-                                    LiquidGlassDefaults.surfaceColor,
-                                    MaterialTheme.colorScheme.surface,
-                                ).graphicsLayer {
-                                    translationY = topBarState.offset.value
-                                    alpha = if (topBarState.heightPx > 0f) {
-                                        1f + (topBarState.offset.value / topBarState.heightPx)
-                                    } else {
-                                        1f
+
+                        @Composable
+                        fun ColumnScope.ArticleVotersSocialCredit() {
+                            val contentLabel = when (article.type) {
+                                ArticleType.Answer -> "回答"
+                                ArticleType.Article -> "文章"
+                            }
+                            val hasVotersSocialCredit = viewModel.votersTotal > 0
+                            if (!hasVotersSocialCredit && viewModel.aigcSupportVoterCount <= 0) return
+                            Spacer(modifier = Modifier.height(8.dp))
+                            if (hasVotersSocialCredit) {
+                                val text = viewModel.votersSocialText.ifBlank {
+                                    "${formatCompactCount(viewModel.votersTotal)} 人赞同了该$contentLabel"
+                                }
+                                val votersTextModifier = if (article.type == ArticleType.Answer) {
+                                    Modifier.clickable {
+                                        showVoters = true
+                                        if (viewModel.voters.isEmpty()) {
+                                            viewModel.loadMoreVoters(environment, reset = true)
+                                        }
                                     }
-                                },
-                        )
+                                } else {
+                                    Modifier
+                                }
+                                Text(
+                                    text = text,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = votersTextModifier,
+                                )
+                            }
+                            if (viewModel.aigcSupportVoterCount > 0) {
+                                if (hasVotersSocialCredit) {
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                }
+                                Text(
+                                    text = "有 ${formatCompactCount(viewModel.aigcSupportVoterCount)} 人认为此${contentLabel}包含AIGC内容",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.error,
+                                )
+                            }
+                        }
+
+                        if (viewModel.content.isNotEmpty() || viewModel.attachment != null) {
+                            if (article.type == ArticleType.Article && viewModel.topics.isNotEmpty()) {
+                                FlowRow(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    viewModel.topics.forEach { topic ->
+                                        androidx.compose.material3.FilterChip(
+                                            selected = false,
+                                            onClick = { navigator.onNavigate(Topic(topic.id, topic.name)) },
+                                            label = { Text("# ${topic.name}") },
+                                        )
+                                    }
+                                }
+                                Spacer(Modifier.height(12.dp))
+                            }
+                            val hasPinnedDate = pinAnswerDate
+                            val hasSocialCredit = viewModel.votersTotal > 0 || viewModel.aigcSupportVoterCount > 0
+                            val endorsements = viewModel.endorsements
+                            val hasEndorsements = endorsements.isNotEmpty()
+                            if (hasPinnedDate || hasSocialCredit || hasEndorsements) {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                                    horizontalAlignment = Alignment.Start,
+                                ) {
+                                    if (hasPinnedDate) {
+                                        DateTexts()
+                                    }
+                                    ArticleVotersSocialCredit()
+                                    if (hasEndorsements) {
+                                        if (hasPinnedDate || hasSocialCredit) {
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                        }
+                                        FlowRow(
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                                        ) {
+                                            endorsements.forEach { endorsement ->
+                                                AnswerEndorsementChip(endorsement)
+                                            }
+                                        }
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(16.dp))
+                            }
+                            if (useWebView && isLegacyWebViewSupported) {
+                                // WebView 正文渲染已经废弃，只保留为紧急回退路径；正文外 UI 不再为它单独分支。
+                                ArticleWebViewContent(
+                                    article = article,
+                                    html = viewModel.content,
+                                    title = viewModel.title,
+                                    scrollState = scrollState,
+                                    rememberedScrollY = viewModel.rememberedScrollY,
+                                    rememberedScrollYSync = viewModel.rememberedScrollYSync,
+                                    onRememberedScrollYSyncChange = { viewModel.rememberedScrollYSync = it },
+                                    onImageLoadFailed = { userMessages.showMessage("图片加载失败，请向开发者反馈") },
+                                    onDoubleTap = ::handleAnswerDoubleTap,
+                                )
+                                Column(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalAlignment = Alignment.End,
+                                ) {
+                                    if (!pinAnswerDate) {
+                                        DateTexts()
+                                    }
+                                    if (viewModel.ipInfo != null) {
+                                        Text(
+                                            "IP属地：${viewModel.ipInfo}",
+                                            color = Color.Gray,
+                                            fontSize = 11.sp,
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height((16 + 36).dp))
+                            } else {
+                                RenderMarkdown(
+                                    html = viewModel.content,
+                                    modifier = Modifier
+                                        .testTag("article_content")
+                                        .articleMarkdownSelectionWorkaround(),
+                                    scrollState = scrollState,
+                                    selectable = true,
+                                    enableScroll = false,
+                                    useTiqianRenderer = useTiqianMarkdown,
+                                    header = {},
+                                    footer = {
+                                        ArticleVideoAttachmentContent(viewModel.attachment)
+                                        Column(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalAlignment = Alignment.End,
+                                        ) {
+                                            if (!pinAnswerDate) {
+                                                DateTexts()
+                                            }
+                                            if (viewModel.ipInfo != null) {
+                                                Text(
+                                                    "IP属地：${viewModel.ipInfo}",
+                                                    color = Color.Gray,
+                                                    fontSize = 11.sp,
+                                                )
+                                            }
+                                        }
+                                        ContentEndMarker()
+                                        Spacer(modifier = Modifier.height((16 + 36).dp))
+                                    },
+                                )
+                            }
+                        }
                     }
+                    Spacer(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
+                            .pageTurnViewportWithGuide(pageTurnTarget),
+                    )
+                    // 状态栏渐变遮罩，仅 duo3 路径需要；主视觉路径不绘制。
+                    val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+                    val surfaceColor = MaterialTheme.colorScheme.surfaceContainer
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(statusBarHeight + 16.dp)
+                            .background(
+                                Brush.verticalGradient(smoothGradient(surfaceColor, 0.8f)),
+                            ),
+                    ) {}
                 }
             }
         }
