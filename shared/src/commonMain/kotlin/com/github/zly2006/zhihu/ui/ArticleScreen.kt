@@ -467,7 +467,12 @@ fun ArticleScreen(
                         modifier = Modifier
                             .onSizeChanged {
                                 topBarState.heightPx = it.height.toFloat()
-                            }.graphicsLayer {
+                            }.liquidGlass(
+                                glassBackdrop,
+                                RectangleShape,
+                                LiquidGlassDefaults.surfaceColor,
+                                MaterialTheme.colorScheme.surface,
+                            ).graphicsLayer {
                                 translationY = topBarState.offset.value
                                 alpha = if (topBarState.heightPx > 0f) 1f + (topBarState.offset.value / topBarState.heightPx) else 1f
                             },
@@ -588,8 +593,16 @@ fun ArticleScreen(
                             },
                             scrollBehavior = if (scrollStateMaxValue > 0) scrollBehavior else null,
                             colors = TopAppBarDefaults.topAppBarColors().copy(
-                                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.86f),
-                                scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.9f),
+                                containerColor = if (glassBackdrop != null) {
+                                    Color.Transparent
+                                } else {
+                                    MaterialTheme.colorScheme.surface.copy(alpha = 0.86f)
+                                },
+                                scrolledContainerColor = if (glassBackdrop != null) {
+                                    Color.Transparent
+                                } else {
+                                    MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.9f)
+                                },
                             ),
                         )
                     }
