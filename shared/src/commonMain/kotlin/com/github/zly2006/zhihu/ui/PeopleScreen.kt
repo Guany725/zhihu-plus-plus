@@ -966,7 +966,7 @@ fun PeopleScreen(
                                 .fillMaxSize()
                                 .pageTurnViewportWithGuide(pageTurnTarget)
                                 .testTag(PEOPLE_SCREEN_ACTIVITIES_LIST_TAG),
-                                contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
+                            contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
                         ) {
                             FeedCard(
                                 it,
@@ -989,7 +989,7 @@ fun PeopleScreen(
                                 .fillMaxSize()
                                 .pageTurnViewportWithGuide(pageTurnTarget)
                                 .testTag(PEOPLE_SCREEN_COLLECTIONS_LIST_TAG),
-                                contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
+                            contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
                             key = { it.id },
                         ) { collection ->
                             CollectionListItem(
@@ -1011,7 +1011,7 @@ fun PeopleScreen(
                                 .fillMaxSize()
                                 .pageTurnViewportWithGuide(pageTurnTarget)
                                 .testTag(PEOPLE_SCREEN_QUESTIONS_LIST_TAG),
-                                contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
+                            contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
                             key = { it.id },
                         ) { question ->
                             QuestionListItem(
@@ -1033,7 +1033,7 @@ fun PeopleScreen(
                                 .fillMaxSize()
                                 .pageTurnViewportWithGuide(pageTurnTarget)
                                 .testTag(PEOPLE_SCREEN_PINS_LIST_TAG),
-                                contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
+                            contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
                             key = { it.id },
                         ) { pin ->
                             PinListItem(
@@ -1056,7 +1056,7 @@ fun PeopleScreen(
                                 .fillMaxSize()
                                 .pageTurnViewportWithGuide(pageTurnTarget)
                                 .testTag(PEOPLE_SCREEN_COLUMNS_LIST_TAG),
-                                contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
+                            contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
                             key = { it.id },
                         ) { column ->
                             ColumnListItem(
@@ -1078,7 +1078,7 @@ fun PeopleScreen(
                                 .fillMaxSize()
                                 .pageTurnViewportWithGuide(pageTurnTarget)
                                 .testTag(PEOPLE_SCREEN_FOLLOWERS_LIST_TAG),
-                                contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
+                            contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
                             key = { it.id },
                         ) { people ->
                             PeopleListItem(
@@ -1101,7 +1101,7 @@ fun PeopleScreen(
                                 .fillMaxSize()
                                 .pageTurnViewportWithGuide(pageTurnTarget)
                                 .testTag(PEOPLE_SCREEN_FOLLOWING_LIST_TAG),
-                                contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
+                            contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
                             key = { it.id },
                         ) { people ->
                             PeopleListItem(
