@@ -446,6 +446,12 @@ fun ArticleScreen(
         } else {
             null
         }
+        // 顶栏与底栏各自采样一份 backdrop：两份玻璃同时读取同一层会触发循环渲染。
+        val topBarGlassBackdrop = if (isLiquidGlassSupported) {
+            rememberGlassBackdrop(MaterialTheme.colorScheme.background)
+        } else {
+            null
+        }
         // 记录历史最大滚动范围，避免顶栏展开/收起时 maxValue 短暂变化导致 scrollBehavior 抖动。
         var scrollStateMaxValue by remember { mutableIntStateOf(0) }
         LaunchedEffect(scrollState) {
@@ -470,7 +476,12 @@ fun ArticleScreen(
                             }.graphicsLayer {
                                 translationY = topBarState.offset.value
                                 alpha = if (topBarState.heightPx > 0f) 1f + (topBarState.offset.value / topBarState.heightPx) else 1f
-                            },
+                            }.liquidGlass(
+                                topBarGlassBackdrop,
+                                RectangleShape,
+                                LiquidGlassDefaults.surfaceColor,
+                                MaterialTheme.colorScheme.surface,
+                            ),
                     ) {
                         ZhihuTwoRowsTopAppBar(
                             navigationIcon = {
@@ -588,8 +599,16 @@ fun ArticleScreen(
                             },
                             scrollBehavior = if (scrollStateMaxValue > 0) scrollBehavior else null,
                             colors = TopAppBarDefaults.topAppBarColors().copy(
-                                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.86f),
-                                scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.9f),
+                                containerColor = if (topBarGlassBackdrop != null) {
+                                    Color.Transparent
+                                } else {
+                                    MaterialTheme.colorScheme.surface.copy(alpha = 0.86f)
+                                },
+                                scrolledContainerColor = if (topBarGlassBackdrop != null) {
+                                    Color.Transparent
+                                } else {
+                                    MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.9f)
+                                },
                             ),
                         )
                     }
@@ -908,7 +927,12 @@ fun ArticleScreen(
             },
         ) { innerPadding ->
             CompositionLocalProvider(LocalBringIntoViewSpec provides articleBringIntoViewSpec) {
-                Box(modifier = Modifier.fillMaxSize().glassBackdropSource(glassBackdrop)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .glassBackdropSource(topBarGlassBackdrop)
+                        .glassBackdropSource(glassBackdrop),
+                ) {
                     Column(
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
