@@ -130,9 +130,10 @@ internal class DampedDragAnimation(
         releaseJob = animationScope.launch {
             withFrameMillis { }
             if (value != targetValue) {
-                val threshold = (valueRange.endInclusive - valueRange.start) * 0.025f
+                val threshold = ((valueRange.endInclusive - valueRange.start) * 0.025f).coerceAtLeast(0.001f)
                 snapshotFlow { valueAnimation.value }.first { abs(it - valueAnimation.targetValue) < threshold }
             }
+            pressJob?.cancel()
             launch { pressProgressAnimation.animateTo(0f, pressProgressAnimationSpec) }
             launch { scaleXAnimation.animateTo(initialScale, scaleXAnimationSpec) }
             launch { scaleYAnimation.animateTo(initialScale, scaleYAnimationSpec) }
@@ -203,7 +204,12 @@ private suspend inline fun AwaitPointerEventScope.drag(
     var pointer = pointerId
     while (true) {
         val change = awaitDragOrUp(pointer) ?: return null
-        if (change.isConsumed) return null
+        if (change.isConsumed ||
+            change.position.x !in 0f..size.width.toFloat() ||
+            change.position.y !in 0f..size.height.toFloat()
+        ) {
+            return null
+        }
         if (change.changedToUpIgnoreConsumed()) return change
         onDrag(change)
         pointer = change.id

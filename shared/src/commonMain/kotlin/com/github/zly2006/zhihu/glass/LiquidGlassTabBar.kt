@@ -24,6 +24,7 @@ package com.github.zly2006.zhihu.glass
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -64,6 +65,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -147,7 +153,7 @@ fun LiquidGlassTabBar(
             }
         }
     }
-    var currentIndex by remember { mutableIntStateOf(selectedIndex.coerceIn(0, tabCount - 1)) }
+    var currentIndex by remember(tabCount) { mutableIntStateOf(selectedIndex.coerceIn(0, tabCount - 1)) }
 
     fun indexAt(positionX: Float): Int {
         if (tabWidthPx == 0f) return currentIndex
@@ -263,7 +269,18 @@ fun LiquidGlassTabBar(
                                     dampedDrag.animateToValue(currentIndex.toFloat())
                                     true
                                 }
-                            }.testTag(tab.testTag),
+                            }.onKeyEvent { event ->
+                                if (event.key == Key.Enter || event.key == Key.NumPadEnter || event.key == Key.Spacebar) {
+                                    if (event.type == KeyEventType.KeyUp) {
+                                        activate(index)
+                                        dampedDrag.animateToValue(currentIndex.toFloat())
+                                    }
+                                    true
+                                } else {
+                                    false
+                                }
+                            }.focusable()
+                            .testTag(tab.testTag),
                     )
                 }
             }

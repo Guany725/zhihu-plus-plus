@@ -587,9 +587,15 @@ fun ArticleScreen(
                                 }
                             },
                             scrollBehavior = if (scrollStateMaxValue > 0) scrollBehavior else null,
+                            modifier = Modifier.liquidGlass(
+                                glassBackdrop,
+                                RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp),
+                                LiquidGlassDefaults.surfaceColor,
+                                MaterialTheme.colorScheme.surfaceContainer,
+                            ),
                             colors = TopAppBarDefaults.topAppBarColors().copy(
-                                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.86f),
-                                scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.9f),
+                                containerColor = Color.Transparent,
+                                scrolledContainerColor = Color.Transparent,
                             ),
                         )
                     }
@@ -882,14 +888,8 @@ fun ArticleScreen(
                             Box(
                                 modifier = Modifier
                                     .padding(horizontal = 12.dp)
-                                    .padding(bottom = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding() + 8.dp)
-                                    .clip(RoundedCornerShape(24.dp))
-                                    .liquidGlass(
-                                        glassBackdrop,
-                                        RoundedCornerShape(24.dp),
-                                        LiquidGlassDefaults.surfaceColor,
-                                        MaterialTheme.colorScheme.surfaceContainer,
-                                    ).onSizeChanged { bottomBarState.heightPx = it.height.toFloat() }
+                                    .padding(bottom = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding())
+                                    .onSizeChanged { bottomBarState.heightPx = it.height.toFloat() }
                                     .graphicsLayer {
                                         translationY = bottomBarState.offset.value
                                         alpha = if (bottomBarState.heightPx > 0f) {
@@ -897,7 +897,13 @@ fun ArticleScreen(
                                         } else {
                                             1f
                                         }
-                                    },
+                                    }.padding(bottom = 8.dp)
+                                    .liquidGlass(
+                                        glassBackdrop,
+                                        RoundedCornerShape(24.dp),
+                                        LiquidGlassDefaults.surfaceColor,
+                                        MaterialTheme.colorScheme.surfaceContainer,
+                                    ),
                             ) {
                                 ActionBarContent()
                             }

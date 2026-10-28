@@ -84,6 +84,7 @@ import com.github.zly2006.zhihu.test.resetAppPreferences
 import com.github.zly2006.zhihu.test.setZhihuMainContent
 import com.github.zly2006.zhihu.theme.ThemeManager
 import com.github.zly2006.zhihu.theme.ZhihuTheme
+import com.github.zly2006.zhihu.ui.ACCOUNT_SETTINGS_SCROLL_TAG
 import com.github.zly2006.zhihu.ui.AndroidArticleNavigationHandoff
 import com.github.zly2006.zhihu.ui.AndroidZhihuMain
 import com.github.zly2006.zhihu.ui.FOLLOW_SCREEN_PAGER_TAG
@@ -207,9 +208,19 @@ class ZhihuMainNavigationInstrumentedTest {
             .edit(commit = true) { putBoolean("developer", true) }
         composeRule.launchZhihuMain(startDestination = Account.name)
         composeRule.waitUntilTabSelected("nav_tab_account")
-        composeRule.onNodeWithTag("accountSettings.developer").performScrollTo()
-        // 底栏悬浮在列表之上，触摸会被底栏标签命中；这里用语义点击验证返回栈归属。
-        composeRule.onNodeWithTag("accountSettings.developer").performSemanticsAction(SemanticsActions.OnClick)
+        val developerItem = composeRule.onNodeWithTag("accountSettings.developer").performScrollTo()
+        // performScrollTo 只计算滚动容器边界，不知道悬浮底栏；先滚到玻璃上方，再执行真实触摸点击。
+        val itemBounds = developerItem.fetchSemanticsNode().boundsInRoot
+        val navigationTop = composeRule
+            .onNodeWithTag("nav_tab_account")
+            .fetchSemanticsNode()
+            .boundsInRoot.top
+        if (itemBounds.bottom >= navigationTop) {
+            composeRule.onNodeWithTag(ACCOUNT_SETTINGS_SCROLL_TAG).performSemanticsAction(SemanticsActions.ScrollBy) {
+                it(0f, itemBounds.bottom - navigationTop + itemBounds.height)
+            }
+        }
+        developerItem.performClick()
         composeRule.onNodeWithTag("developerSettings/colorScheme").performScrollTo().performClick()
         composeRule.onNodeWithText("Primary").assertIsDisplayed()
         composeRule.runOnIdle { composeRule.activity.onBackPressedDispatcher.onBackPressed() }

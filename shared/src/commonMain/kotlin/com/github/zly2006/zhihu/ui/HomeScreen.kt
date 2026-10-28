@@ -91,6 +91,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -504,8 +506,9 @@ fun HomeScreen(
     )
 
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-    val topBarContentHeight = if (duo3HomeAccount) 72.dp else 52.dp
-    val homeTopBarHeight = if (showTopActions) statusBarTop + topBarContentHeight else statusBarTop
+    val density = LocalDensity.current
+    var homeTopBarHeightPx by remember { mutableIntStateOf(0) }
+    val homeTopBarHeight = maxOf(statusBarTop, with(density) { homeTopBarHeightPx.toDp() })
     val homeGlassBackdrop = if (isLiquidGlassSupported) {
         rememberGlassBackdrop(MaterialTheme.colorScheme.background)
     } else {
@@ -815,6 +818,7 @@ fun HomeScreen(
             onOpenNotification = { navigator.onNavigate(Notification) },
             modifier = Modifier
                 .align(Alignment.TopCenter)
+                .onSizeChanged { homeTopBarHeightPx = it.height }
                 .blur(createMenuBlurRadius),
         )
 
@@ -1075,7 +1079,7 @@ private fun HomeTopBar(
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .height(36.dp)
+                        .height(48.dp)
                         .testTag(HOME_SEARCH_BUTTON_TAG)
                         .glassControl(backdrop, shape, MaterialTheme.colorScheme.surfaceVariant)
                         .clip(shape)
@@ -1112,11 +1116,14 @@ private fun HomeTopBar(
                     Box(
                         modifier = Modifier
                             .size(40.dp)
-                            .testTag(HOME_NOTIFICATION_BUTTON_CONTENT_TAG)
-                            .glassControl(backdrop, CircleShape, MaterialTheme.colorScheme.surfaceVariant)
-                            .clip(CircleShape),
+                            .testTag(HOME_NOTIFICATION_BUTTON_CONTENT_TAG),
                         contentAlignment = Alignment.Center,
                     ) {
+                        Box(
+                            Modifier
+                                .matchParentSize()
+                                .glassControl(backdrop, CircleShape, MaterialTheme.colorScheme.surfaceVariant),
+                        )
                         BadgedBox(
                             badge = {
                                 if (showUnreadBadge && unreadCount > 0) {
