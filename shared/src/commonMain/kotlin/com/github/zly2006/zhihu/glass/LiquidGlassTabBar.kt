@@ -223,7 +223,7 @@ fun LiquidGlassTabBar(
             .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal))
             .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
             .padding(bottom = 8.dp)
-            .padding(horizontal = 24.dp),
+            .padding(horizontal = 16.dp),
         contentAlignment = Alignment.CenterStart,
     ) {
         CompositionLocalProvider(LocalContentColor provides contentColor) {
@@ -240,8 +240,8 @@ fun LiquidGlassTabBar(
                         shape = { CircleShape },
                         effects = {
                             vibrancy()
-                            blur(8.dp.toPx())
-                            lens(24.dp.toPx(), 24.dp.toPx())
+                            blur(16.dp.toPx())
+                            lens(12.dp.toPx(), 12.dp.toPx())
                         },
                         layerBlock = {
                             val scale = lerp(1f, 1f + 16.dp.toPx() / size.width.coerceAtLeast(1f), dampedDrag.pressProgress)
@@ -303,8 +303,8 @@ fun LiquidGlassTabBar(
                         effects = {
                             val progress = dampedDrag.pressProgress
                             vibrancy()
-                            blur(8.dp.toPx())
-                            lens(24.dp.toPx() * progress, 24.dp.toPx() * progress)
+                            blur(16.dp.toPx())
+                            lens(12.dp.toPx() * progress, 12.dp.toPx() * progress)
                         },
                         highlight = { Highlight.Default.copy(alpha = dampedDrag.pressProgress) },
                         onDrawSurface = { drawRect(surfaceColor) },

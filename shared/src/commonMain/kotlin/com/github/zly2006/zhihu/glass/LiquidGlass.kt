@@ -84,8 +84,8 @@ fun Modifier.liquidGlass(
     shape: Shape,
     surfaceColor: Color,
     fallbackColor: Color = surfaceColor,
-    blurRadius: Dp = 12.dp,
-    lensRadius: Dp = 20.dp,
+    blurRadius: Dp = 16.dp,
+    lensRadius: Dp = 12.dp,
 ): Modifier = if (backdrop == null) {
     background(fallbackColor, shape)
 } else {
@@ -102,9 +102,9 @@ fun Modifier.liquidGlass(
 }
 
 object LiquidGlassDefaults {
-    /** 叠在玻璃上的表面色，取自液态玻璃导航栏的 40% 表面容器色。 */
+    /** 叠在玻璃上的表面色，统一使用 58% 表面容器色，降低正文穿透对按钮可读性的干扰。 */
     val surfaceColor: Color
         @Composable
         @ReadOnlyComposable
-        get() = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.4f)
+        get() = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.58f)
 }

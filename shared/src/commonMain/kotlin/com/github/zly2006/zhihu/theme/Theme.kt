@@ -17,13 +17,25 @@
 
 package com.github.zly2006.zhihu.theme
 
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.materialkolor.dynamicColorScheme
+
+// 内容卡片、设置分组和弹层共享圆角层级；胶囊按钮仍使用各自的百分比圆角。
+internal val ZhihuShapes = Shapes(
+    extraSmall = RoundedCornerShape(8.dp),
+    small = RoundedCornerShape(12.dp),
+    medium = RoundedCornerShape(16.dp),
+    large = RoundedCornerShape(24.dp),
+    extraLarge = RoundedCornerShape(28.dp),
+)
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
@@ -76,6 +88,7 @@ fun ZhihuTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
+        shapes = ZhihuShapes,
         content = content,
     )
 }

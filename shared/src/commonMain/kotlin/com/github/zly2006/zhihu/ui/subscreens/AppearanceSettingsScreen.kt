@@ -744,7 +744,7 @@ fun AppearanceSettingsScreen(
 
                 var feedCardStyleExpanded by remember { mutableStateOf(false) }
                 val feedCardStyle = remember {
-                    mutableStateOf(settings.getString("feedCardStyle", "divider"))
+                    mutableStateOf(settings.getString("feedCardStyle", "card"))
                 }
                 val feedCardStyleOptions = listOf(
                     "card" to "卡片样式",
@@ -1737,7 +1737,7 @@ fun AppearanceSettingsScreen(
 
                 SettingItemWithSwitch(
                     title = { Text("信息流卡片：外观更改") },
-                    description = { Text("卡片圆角增大，移除阴影；修改背景与卡片颜色。") },
+                    description = { Text("使用更明亮的卡片底色；圆角与间距沿用统一样式。") },
                     checked = duo3CardAppearance.value,
                     onCheckedChange = {
                         duo3CardAppearance.value = it

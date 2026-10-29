@@ -887,7 +887,7 @@ fun ArticleScreen(
                         if (bottomBarState.showSlot) {
                             Box(
                                 modifier = Modifier
-                                    .padding(horizontal = 12.dp)
+                                    .padding(horizontal = 16.dp)
                                     .padding(bottom = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding())
                                     .onSizeChanged { bottomBarState.heightPx = it.height.toFloat() }
                                     .graphicsLayer {
@@ -900,7 +900,7 @@ fun ArticleScreen(
                                     }.padding(bottom = 8.dp)
                                     .liquidGlass(
                                         glassBackdrop,
-                                        RoundedCornerShape(24.dp),
+                                        MaterialTheme.shapes.large,
                                         LiquidGlassDefaults.surfaceColor,
                                         MaterialTheme.colorScheme.surfaceContainer,
                                     ),
