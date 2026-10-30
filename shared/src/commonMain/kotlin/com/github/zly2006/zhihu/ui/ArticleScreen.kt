@@ -107,6 +107,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import coil3.compose.AsyncImage
 import com.github.zly2006.zhihu.data.DataHolder
 import com.github.zly2006.zhihu.data.VoteUpState
+import com.github.zly2006.zhihu.glass.LiquidGlassDefaults
+import com.github.zly2006.zhihu.glass.glassBackdropSource
+import com.github.zly2006.zhihu.glass.isLiquidGlassSupported
+import com.github.zly2006.zhihu.glass.liquidGlass
+import com.github.zly2006.zhihu.glass.rememberGlassBackdrop
 import com.github.zly2006.zhihu.markdown.RenderMarkdown
 import com.github.zly2006.zhihu.navigation.Article
 import com.github.zly2006.zhihu.navigation.ArticleType
@@ -436,6 +441,11 @@ fun ArticleScreen(
     @Composable
     fun MainContent() {
         val scrollBehavior = rememberPreferCollapsedExitUntilCollapsedScrollBehavior()
+        val glassBackdrop = if (isLiquidGlassSupported) {
+            rememberGlassBackdrop(MaterialTheme.colorScheme.background)
+        } else {
+            null
+        }
         // 记录历史最大滚动范围，避免顶栏展开/收起时 maxValue 短暂变化导致 scrollBehavior 抖动。
         var scrollStateMaxValue by remember { mutableIntStateOf(0) }
         LaunchedEffect(scrollState) {
@@ -577,12 +587,15 @@ fun ArticleScreen(
                                 }
                             },
                             scrollBehavior = if (scrollStateMaxValue > 0) scrollBehavior else null,
+                            modifier = Modifier.liquidGlass(
+                                glassBackdrop,
+                                RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp),
+                                LiquidGlassDefaults.surfaceColor,
+                                MaterialTheme.colorScheme.surfaceContainer,
+                            ),
                             colors = TopAppBarDefaults.topAppBarColors().copy(
-                                scrolledContainerColor = if (MaterialTheme.colorScheme.surfaceContainer != MaterialTheme.colorScheme.background) {
-                                    MaterialTheme.colorScheme.surfaceContainer
-                                } else {
-                                    MaterialTheme.colorScheme.surfaceContainerHigh
-                                },
+                                containerColor = Color.Transparent,
+                                scrolledContainerColor = Color.Transparent,
                             ),
                         )
                     }
@@ -602,7 +615,7 @@ fun ArticleScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 16.dp)
-                                    .padding(bottom = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding() + 8.dp)
+                                    .padding(vertical = 4.dp)
                                     .height(36.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                             ) {
@@ -711,7 +724,7 @@ fun ArticleScreen(
                             // ── duo3：药丸式动画投票与操作区 ────────────────────
                             Row(
                                 modifier = Modifier
-                                    .padding(bottom = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding() + 16.dp)
+                                    .padding(vertical = 8.dp)
                                     .padding(horizontal = 16.dp)
                                     .fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -874,6 +887,8 @@ fun ArticleScreen(
                         if (bottomBarState.showSlot) {
                             Box(
                                 modifier = Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .padding(bottom = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding())
                                     .onSizeChanged { bottomBarState.heightPx = it.height.toFloat() }
                                     .graphicsLayer {
                                         translationY = bottomBarState.offset.value
@@ -882,7 +897,13 @@ fun ArticleScreen(
                                         } else {
                                             1f
                                         }
-                                    },
+                                    }.padding(bottom = 8.dp)
+                                    .liquidGlass(
+                                        glassBackdrop,
+                                        MaterialTheme.shapes.large,
+                                        LiquidGlassDefaults.surfaceColor,
+                                        MaterialTheme.colorScheme.surfaceContainer,
+                                    ),
                             ) {
                                 ActionBarContent()
                             }
@@ -893,7 +914,11 @@ fun ArticleScreen(
             },
         ) { innerPadding ->
             CompositionLocalProvider(LocalBringIntoViewSpec provides articleBringIntoViewSpec) {
-                Box {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .glassBackdropSource(glassBackdrop),
+                ) {
                     Column(
                         modifier = Modifier
                             .padding(horizontal = 16.dp)

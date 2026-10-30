@@ -109,6 +109,11 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.github.zly2006.zhihu.account.LoginScreen
 import com.github.zly2006.zhihu.filter.ContentOpenFrom
+import com.github.zly2006.zhihu.glass.LiquidGlassTab
+import com.github.zly2006.zhihu.glass.LiquidGlassTabBar
+import com.github.zly2006.zhihu.glass.glassBackdropSource
+import com.github.zly2006.zhihu.glass.isLiquidGlassSupported
+import com.github.zly2006.zhihu.glass.rememberGlassBackdrop
 import com.github.zly2006.zhihu.navigation.Account
 import com.github.zly2006.zhihu.navigation.Article
 import com.github.zly2006.zhihu.navigation.ArticleType
@@ -250,6 +255,12 @@ fun ZhihuMain(
     val readingPlayer = rememberReadingPlayerController()
     val readingPlayerState by readingPlayer.state
     val settings = rememberSettingsStore()
+    // 液态玻璃底栏采样的是页面内容本身；不支持运行时着色器时退回普通 Material 底栏。
+    val glassBackdrop = if (isLiquidGlassSupported) {
+        rememberGlassBackdrop(MaterialTheme.colorScheme.background)
+    } else {
+        null
+    }
 
     /** 右侧详情独立持有返回栈；栏内导航保留上级，从左侧重新选项时清空。 */
     val paneStateHolder = rememberSaveableStateHolder()
@@ -260,6 +271,7 @@ fun ZhihuMain(
     var showReadingQueue by remember { mutableStateOf(false) }
     var isReadingPlayerExpandedByUser by remember { mutableStateOf(false) }
     var readingPlayerHeightPx by remember { mutableIntStateOf(0) }
+    var bottomBarHeightPx by remember { mutableIntStateOf(0) }
     val readingPlayerOverlayOffsetState = remember { ReadingPlayerOverlayOffsetState() }
     val density = LocalDensity.current
     val currentOnMainTabDestinationChange by rememberUpdatedState(onCurrentMainTabDestinationChange)
@@ -595,53 +607,82 @@ fun ZhihuMain(
                                 ?.bottomDestination
                             AnimatedVisibility(
                                 visible = showMainNavigation && (!autoHideBottomBar || isBottomBarVisible),
+                                modifier = Modifier.onSizeChanged { bottomBarHeightPx = it.height },
                                 enter = slideInVertically(tween(200)) { it },
                                 exit = slideOutVertically(tween(200)) { it },
                             ) {
-                                NavigationBar(
-                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                    modifier = Modifier.height(
-                                        64.dp + bottomPadding,
-                                    ),
-                                ) {
-                                    @Composable
-                                    fun Item(
-                                        destination: TopLevelDestination,
-                                        label: String,
-                                        icon: ImageVector,
-                                    ) {
-                                        val tag = "nav_tab_${destination.name.lowercase()}"
-                                        NavigationBarItem(
-                                            currentBottomDestination?.let { it::class == destination::class } == true,
-                                            onClick = {
-                                                isReadingPlayerExpandedByUser = false
-                                                if (currentBottomDestination?.let { it::class == destination::class } != true) {
-                                                    navigateTopLevel(destination)
-                                                } else if (tapToScrollToTopEnabled) {
-                                                    scrollToTopTrigger++
-                                                }
-                                            },
-                                            label = { Text(label) },
-                                            alwaysShowLabel = true,
-                                            colors = if (!isDarkTheme) {
-                                                NavigationBarItemDefaults.colors().copy(
-                                                    selectedIndicatorColor =
-                                                        MaterialTheme.colorScheme.secondaryContainer
-                                                            .copy(alpha = 0.92f)
-                                                            .compositeOver(MaterialTheme.colorScheme.secondary),
+                                Box {
+                                    if (glassBackdrop != null) {
+                                        val selectedIndex = bottomBarItems
+                                            .indexOfFirst { item ->
+                                                currentBottomDestination?.let { it::class == item.first::class } == true
+                                            }.coerceAtLeast(0)
+                                        LiquidGlassTabBar(
+                                            tabs = bottomBarItems.map { item ->
+                                                LiquidGlassTab(
+                                                    label = item.second,
+                                                    testTag = "nav_tab_${item.first.name.lowercase()}",
+                                                    icon = { _ -> Icon(item.third, contentDescription = null) },
+                                                    onClick = {
+                                                        isReadingPlayerExpandedByUser = false
+                                                        if (currentBottomDestination?.let { it::class == item.first::class } != true) {
+                                                            navigateTopLevel(item.first)
+                                                        } else if (tapToScrollToTopEnabled) {
+                                                            scrollToTopTrigger++
+                                                        }
+                                                    },
                                                 )
-                                            } else {
-                                                NavigationBarItemDefaults.colors()
                                             },
-                                            icon = {
-                                                Icon(icon, contentDescription = label)
-                                            },
-                                            modifier = Modifier.padding(top = 4.dp).testTag(tag),
+                                            selectedIndex = selectedIndex,
+                                            backdrop = glassBackdrop,
                                         )
-                                    }
+                                    } else {
+                                        NavigationBar(
+                                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                            modifier = Modifier.height(
+                                                64.dp + bottomPadding,
+                                            ),
+                                        ) {
+                                            @Composable
+                                            fun Item(
+                                                destination: TopLevelDestination,
+                                                label: String,
+                                                icon: ImageVector,
+                                            ) {
+                                                val tag = "nav_tab_${destination.name.lowercase()}"
+                                                NavigationBarItem(
+                                                    currentBottomDestination?.let { it::class == destination::class } == true,
+                                                    onClick = {
+                                                        isReadingPlayerExpandedByUser = false
+                                                        if (currentBottomDestination?.let { it::class == destination::class } != true) {
+                                                            navigateTopLevel(destination)
+                                                        } else if (tapToScrollToTopEnabled) {
+                                                            scrollToTopTrigger++
+                                                        }
+                                                    },
+                                                    label = { Text(label) },
+                                                    alwaysShowLabel = true,
+                                                    colors = if (!isDarkTheme) {
+                                                        NavigationBarItemDefaults.colors().copy(
+                                                            selectedIndicatorColor =
+                                                                MaterialTheme.colorScheme.secondaryContainer
+                                                                    .copy(alpha = 0.92f)
+                                                                    .compositeOver(MaterialTheme.colorScheme.secondary),
+                                                        )
+                                                    } else {
+                                                        NavigationBarItemDefaults.colors()
+                                                    },
+                                                    icon = {
+                                                        Icon(icon, contentDescription = label)
+                                                    },
+                                                    modifier = Modifier.padding(top = 4.dp).testTag(tag),
+                                                )
+                                            }
 
-                                    bottomBarItems.forEach { item ->
-                                        Item(item.first, item.second, item.third)
+                                            bottomBarItems.forEach { item ->
+                                                Item(item.first, item.second, item.third)
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -674,7 +715,7 @@ fun ZhihuMain(
                     ) {
                         NavHost(
                             navController,
-                            modifier = Modifier.pointerInput(Unit) {
+                            modifier = Modifier.glassBackdropSource(glassBackdrop).pointerInput(Unit) {
                                 while (true) {
                                     awaitPointerEventScope {
                                         awaitFirstDown(
@@ -884,12 +925,13 @@ fun ZhihuMain(
                 .align(Alignment.BottomCenter)
                 .padding(
                     start = if (showListDetail && showDetailPane) listPaneWidth + LIST_DETAIL_DIVIDER_WIDTH else 0.dp,
-                    bottom = bottomPadding + 16.dp + if (
+                    bottom = 16.dp + if (
                         !showDetailPane && showMainNavigation && showMainNavigationBar && (!autoHideBottomBar || isBottomBarVisible)
                     ) {
-                        64.dp
+                        // 底栏样式（普通 Material 底栏或悬浮的液态玻璃底栏）决定实际高度，按实测结果避让。
+                        maxOf(bottomPadding, with(density) { bottomBarHeightPx.toDp() })
                     } else {
-                        0.dp
+                        bottomPadding
                     },
                 ).fillMaxWidth(),
             visible = isReadingPlayerExpanded,

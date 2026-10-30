@@ -20,6 +20,7 @@ package com.github.zly2006.zhihu.ui
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -441,7 +442,7 @@ fun SearchScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
+                .padding(top = innerPadding.calculateTopPadding()),
         ) {
             if (search.query.isNotEmpty() && !isMemberSearch) {
                 PrimaryTabRow(selectedTabIndex = viewModel.searchTab.ordinal) {
@@ -772,6 +773,7 @@ fun SearchScreen(
                         modifier = Modifier
                             .pageTurnViewportWithGuide(pageTurnTarget)
                             .testTag("search_general_results"),
+                        contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
                         topContent = {
                             item {
                                 if (isMemberSearch) {
