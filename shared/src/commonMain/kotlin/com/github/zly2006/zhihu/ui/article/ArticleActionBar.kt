@@ -64,7 +64,7 @@ internal fun ArticleActionBar(
             Icon(if (favorited) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder, "收藏", Modifier.size(22.dp))
         }
         ArticleAction("更多", false, onMore, Modifier.weight(1f), emphasized) {
-            Icon(Icons.Filled.MoreVert, "更多选项", Modifier.size(22.dp))
+            Icon(Icons.Filled.MoreVert, if (emphasized) "底栏更多选项" else "更多选项", Modifier.size(22.dp))
         }
     }
 }
