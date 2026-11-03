@@ -146,9 +146,12 @@ fun CollectionScreen(
             listState = listState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
                 .pageTurnViewportWithGuide(pageTurnTarget)
                 .testTag(COLLECTION_SCREEN_LIST_TAG),
+            contentPadding = PaddingValues(
+                top = innerPadding.calculateTopPadding(),
+                bottom = innerPadding.calculateBottomPadding() + 8.dp,
+            ),
             footer = ProgressIndicatorFooter,
         ) { collection ->
             Card(

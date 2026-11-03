@@ -22,15 +22,16 @@ ktlint {
 }
 
 kotlin {
-    jvmToolchain(17)
+    // backdrop 2.0.0 的 JVM 产物使用 Java 21 字节码，运行和打包必须使用相同或更高版本。
+    jvmToolchain(21)
     compilerOptions {
-        jvmTarget = JvmTarget.JVM_17
+        jvmTarget = JvmTarget.JVM_21
     }
 }
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
@@ -116,6 +117,12 @@ tasks.withType<Jar>().configureEach {
 compose.desktop {
     application {
         mainClass = "com.github.zly2006.zhihu.desktop.MainKt"
+        javaHome =
+            javaToolchains
+                .launcherFor {
+                    languageVersion.set(JavaLanguageVersion.of(21))
+                }.get()
+                .metadata.installationPath.asFile.absolutePath
 
         buildTypes.release.proguard {
             isEnabled.set(true)

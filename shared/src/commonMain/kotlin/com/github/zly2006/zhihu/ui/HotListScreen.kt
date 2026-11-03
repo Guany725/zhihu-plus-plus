@@ -19,7 +19,6 @@ package com.github.zly2006.zhihu.ui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -116,9 +115,12 @@ fun HotListScreen(
                 listState = listState,
                 onLoadMore = { viewModel.loadMore(environment) },
                 modifier = Modifier
-                    .padding(innerPadding)
                     .pageTurnViewportWithGuide(pageTurnTarget)
                     .testTag(HOT_LIST_LIST_TAG),
+                contentPadding = PaddingValues(
+                    top = innerPadding.calculateTopPadding() + 8.dp,
+                    bottom = innerPadding.calculateBottomPadding() + 8.dp,
+                ),
                 isEnd = { viewModel.isEnd },
                 footer = ProgressIndicatorFooter,
             ) { item ->

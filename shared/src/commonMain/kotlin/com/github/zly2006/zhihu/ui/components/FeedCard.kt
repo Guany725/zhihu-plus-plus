@@ -30,13 +30,10 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
@@ -104,7 +101,6 @@ fun FeedCard(
     item: FeedDisplayItem,
     modifier: Modifier = Modifier,
     readingQueueSourceId: String? = null,
-    maxHeight: Dp = 240.dp,
     thumbnailUrl: String? = null,
     horizontalPadding: Dp = 16.dp,
     menuItems: @Composable ColumnScope.(dismissMenu: () -> Unit) -> Unit = { _ -> },
@@ -124,7 +120,7 @@ fun FeedCard(
         settings.getBoolean("showFeedThumbnail", true)
     }
     val feedCardStyle = remember {
-        settings.getString("feedCardStyle", "divider")
+        settings.getString("feedCardStyle", "card")
     }
     val duo3CardAppearance = remember { settings.getBoolean("duo3_card_appearance", false) }
     val duo3CardLayout = remember { settings.getBoolean("duo3_card_layout", false) }
@@ -133,7 +129,6 @@ fun FeedCard(
         ?.content
         ?.filterIsInstance<DataHolder.Pin.ContentImage>()
         .orEmpty()
-    val showPinImages = showFeedThumbnail && pinImages.isNotEmpty() && !item.isFiltered
     val isSelected = item.navDestination != null && item.navDestination == selectedDestination
     val selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.55f)
     val performClick: (FeedDisplayItem) -> Unit = { clickedItem ->
@@ -155,8 +150,7 @@ fun FeedCard(
             modifier = modifier
                 .fillMaxWidth()
                 .semantics { selected = isSelected }
-                .then(if (isSelected) Modifier.background(selectedContainerColor) else Modifier)
-                .then(if (showPinImages || duo3CardLayout) Modifier else Modifier.heightIn(max = maxHeight)),
+                .then(if (isSelected) Modifier.background(selectedContainerColor) else Modifier),
         ) {
             Column(
                 modifier = Modifier
@@ -177,15 +171,18 @@ fun FeedCard(
                     showSourceLabel = showSourceLabel,
                 )
             }
-            HorizontalDivider(thickness = 0.3.dp)
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = horizontalPadding),
+                thickness = 0.5.dp,
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+            )
         }
     } else {
         Box(
             modifier = modifier
                 .fillMaxWidth()
                 .semantics { selected = isSelected }
-                .then(if (showPinImages || duo3CardLayout) Modifier else Modifier.heightIn(max = maxHeight))
-                .padding(horizontal = horizontalPadding, vertical = 8.dp),
+                .padding(horizontal = horizontalPadding, vertical = 6.dp),
         ) {
             Card(
                 colors = if (isSelected) {
@@ -195,25 +192,17 @@ fun FeedCard(
                         containerColor = MaterialTheme.colorScheme.surfaceBright,
                     )
                 } else {
-                    CardDefaults.cardColors()
+                    CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
                 },
-                shape = if (duo3CardAppearance) RoundedCornerShape(24.dp) else CardDefaults.shape,
+                shape = MaterialTheme.shapes.large,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .let { if (duo3CardAppearance) it.clip(RoundedCornerShape(24.dp)) else it }
+                    .clip(MaterialTheme.shapes.large)
                     .clickable { performClick(item) },
-                elevation = if (duo3CardAppearance) {
-                    CardDefaults.cardElevation()
-                } else {
-                    CardDefaults.cardElevation(defaultElevation = 2.dp)
-                },
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             ) {
                 Column(
-                    modifier = if (duo3CardAppearance) {
-                        Modifier.padding(16.dp, 12.dp, 16.dp, 16.dp)
-                    } else {
-                        Modifier.padding(8.dp)
-                    },
+                    modifier = Modifier.padding(16.dp),
                 ) {
                     FeedCardContent(
                         item = item,
@@ -353,10 +342,9 @@ private fun FeedCardContent(
                         model = thumbnailUrl,
                         contentDescription = "Thumbnail",
                         modifier = Modifier
-                            .padding(top = 8.dp)
-                            .sizeIn(maxHeight = 80.dp, maxWidth = 128.dp)
-                            .clip(RoundedCornerShape(8.dp)),
-                        contentScale = ContentScale.FillHeight,
+                            .size(80.dp)
+                            .clip(MaterialTheme.shapes.small),
+                        contentScale = ContentScale.Crop,
                     )
                 }
             }
@@ -434,8 +422,12 @@ private fun FeedCardContent(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = parseEmphasizedHtmlTextWithTheme(item.title),
-                    fontSize = 16.sp * fontSizePercent / 100,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontSize = 17.sp * fontSizePercent / 100,
+                        lineHeight = 25.sp * fontSizePercent / 100,
+                        fontWeight = FontWeight.SemiBold,
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -444,7 +436,7 @@ private fun FeedCardContent(
         val avatarSrc = item.avatarSrc
         val authorName = item.authorName
         if (avatarSrc != null && authorName != null) {
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(8.dp))
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.clickable {},
@@ -478,9 +470,10 @@ private fun FeedCardContent(
                     text = parseEmphasizedHtmlTextWithTheme(item.summary ?: ""),
                     fontSize = 14.sp * fontSizePercent / 100,
                     lineHeight = 14.sp * fontSizePercent / 100 * lineHeightPercent / 100,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = if (item.isFiltered) 0.dp else 3.dp),
+                    modifier = Modifier.padding(top = if (item.isFiltered) 0.dp else 8.dp),
                 )
                 PinFeedImages(
                     images = visiblePinImages,
@@ -494,7 +487,9 @@ private fun FeedCardContent(
                         Text(
                             text = item.details,
                             fontSize = 12.sp,
-                            lineHeight = 12.sp,
+                            lineHeight = 18.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.weight(1f),
                         )
@@ -502,15 +497,15 @@ private fun FeedCardContent(
                     }
                 }
             }
-            if (!thumbnailUrl.isNullOrEmpty() && showFeedThumbnail) {
+            if (!thumbnailUrl.isNullOrEmpty() && showFeedThumbnail && !item.isFiltered) {
                 Spacer(modifier = Modifier.width(8.dp))
                 AsyncImage(
                     model = thumbnailUrl,
                     contentDescription = "Thumbnail",
                     modifier = Modifier
-                        .weight(1f)
-                        .sizeIn(maxWidth = 60.dp)
-                        .clip(RoundedCornerShape(8.dp)),
+                        .size(80.dp)
+                        .clip(MaterialTheme.shapes.small),
+                    contentScale = ContentScale.Crop,
                 )
             }
         }
@@ -532,7 +527,7 @@ private fun PinFeedImages(
                 modifier = modifier
                     .fillMaxWidth(1f / 3f)
                     .aspectRatio(1f)
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(MaterialTheme.shapes.small)
                     .testTag("pin_feed_image_0"),
                 contentScale = ContentScale.Crop,
             )
@@ -612,7 +607,7 @@ private fun PinFeedImage(
 ) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
+            .clip(MaterialTheme.shapes.small)
             .testTag("pin_feed_image_$index"),
     ) {
         AsyncImage(

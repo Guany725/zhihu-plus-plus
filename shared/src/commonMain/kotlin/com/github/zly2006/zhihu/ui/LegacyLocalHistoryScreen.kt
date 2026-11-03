@@ -18,11 +18,11 @@
 package com.github.zly2006.zhihu.ui
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.zly2006.zhihu.reading.RegisterReadingQueueSource
 import com.github.zly2006.zhihu.ui.components.FeedCard
@@ -56,8 +56,11 @@ fun LegacyLocalHistoryScreen(
     FeedPullToRefresh(viewModel, environment) {
         PaginatedList(
             modifier = Modifier
-                .padding(innerPadding)
                 .pageTurnViewportWithGuide(pageTurnTarget),
+            contentPadding = PaddingValues(
+                top = innerPadding.calculateTopPadding(),
+                bottom = innerPadding.calculateBottomPadding() + 8.dp,
+            ),
             items = viewModel.displayItems,
             listState = listState,
             onLoadMore = { /* 不需要加载更多 */ },

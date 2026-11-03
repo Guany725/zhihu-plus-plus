@@ -165,7 +165,7 @@ private fun FollowScreenContent(
         viewModel.selectedTabIndex = pagerState.currentPage
     }
 
-    Column(modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())) {
+    Column {
         FollowTabRow(
             pagerState = pagerState,
             selectedTabIndex = pagerState.currentPage,
@@ -197,11 +197,13 @@ private fun FollowScreenContent(
                 0 -> FollowRecommendScreen(
                     scrollToTopTrigger = scrollToTopTrigger,
                     isActive = isFollowPageTurnTargetActive(isActive, pagerState.currentPage, 0),
+                    innerPadding = innerPadding,
                 )
 
                 1 -> FollowDynamicScreen(
                     scrollToTopTrigger = scrollToTopTrigger,
                     isActive = isFollowPageTurnTargetActive(isActive, pagerState.currentPage, 1),
+                    innerPadding = innerPadding,
                 )
             }
         }
@@ -346,6 +348,7 @@ fun FollowingUsersRow() {
 fun FollowRecommendScreen(
     scrollToTopTrigger: Int = 0,
     isActive: Boolean = true,
+    innerPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     val viewModel: FollowRecommendViewModel = viewModel { FollowRecommendViewModel() }
     val readingQueueSourceId = "follow:recommend"
@@ -408,6 +411,7 @@ fun FollowRecommendScreen(
                         FollowingUsersRow()
                     }
                 },
+                contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
                 onLoadMore = { viewModel.loadMore(environment) },
                 footer = ProgressIndicatorFooter,
             ) { item ->
@@ -500,6 +504,7 @@ fun FollowRecommendScreen(
 fun FollowDynamicScreen(
     scrollToTopTrigger: Int = 0,
     isActive: Boolean = true,
+    innerPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     val viewModel: FollowViewModel = viewModel { FollowViewModel() }
     val readingQueueSourceId = "follow:dynamic"
@@ -563,6 +568,7 @@ fun FollowDynamicScreen(
                         Spacer(modifier = Modifier.height(8.dp))
                     }
                 },
+                contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 8.dp),
                 footer = ProgressIndicatorFooter,
             ) { item ->
                 FeedCard(

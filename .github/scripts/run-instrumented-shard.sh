@@ -20,11 +20,14 @@ mkdir -p "$results_dir"
 adb -s "$device_serial" logcat -c
 adb -s "$device_serial" logcat -v time -s ZHPP_TEST:I &
 logcat_pid=$!
+adb -s "$device_serial" logcat -v threadtime > "$results_dir/logcat-shard-$shard_index.txt" &
+full_logcat_pid=$!
 
 capture_diagnostics() {
     kill "$logcat_pid" 2>/dev/null || true
     wait "$logcat_pid" 2>/dev/null || true
-    adb -s "$device_serial" logcat -d > "$results_dir/logcat-shard-$shard_index.txt" || true
+    kill "$full_logcat_pid" 2>/dev/null || true
+    wait "$full_logcat_pid" 2>/dev/null || true
 }
 trap capture_diagnostics EXIT
 

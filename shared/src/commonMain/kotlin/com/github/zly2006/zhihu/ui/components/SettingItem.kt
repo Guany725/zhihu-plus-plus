@@ -168,7 +168,7 @@ fun SettingItemGroup(
 
         Layout(
             content = content,
-            modifier = modifier.clip(RoundedCornerShape(16.dp)),
+            modifier = modifier.clip(MaterialTheme.shapes.large),
         ) { measurables, constraints ->
             val placeables = measurables.map { it.measure(constraints) }
             val spacing = 2.dp.roundToPx()
@@ -252,7 +252,7 @@ fun SettingItemOverall(
                 enabled = enabled,
             )
         },
-        shape = RoundedCornerShape(50),
+        shape = MaterialTheme.shapes.large,
         colors = CardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -371,9 +371,9 @@ fun SettingItem(
     bottomAction: (@Composable () -> Unit)? = null,
     shape: Shape = RoundedCornerShape(4.dp),
     colors: CardColors = CardColors(
-        containerColor = MaterialTheme.colorScheme.surfaceBright,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         contentColor = MaterialTheme.colorScheme.onSurface,
-        disabledContainerColor = MaterialTheme.colorScheme.surfaceBright,
+        disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         disabledContentColor = MaterialTheme.colorScheme.outlineVariant,
     ),
     enabled: Boolean = true,

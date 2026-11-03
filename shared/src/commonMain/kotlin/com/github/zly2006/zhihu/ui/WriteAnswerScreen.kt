@@ -22,6 +22,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
@@ -31,10 +32,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -370,6 +373,15 @@ fun WriteAnswerScreen(
                     Button(
                         onClick = { submitAnswer(publish = true) },
                         enabled = !isSubmitting && !isUploadingImage,
+                        shape = RoundedCornerShape(50),
+                        border = BorderStroke(
+                            1.dp,
+                            MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
+                        ),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.86f),
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                        ),
                     ) {
                         if (isSubmitting) {
                             CircularProgressIndicator(
