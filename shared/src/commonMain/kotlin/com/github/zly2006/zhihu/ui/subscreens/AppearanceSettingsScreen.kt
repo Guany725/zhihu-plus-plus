@@ -1780,7 +1780,7 @@ fun AppearanceSettingsScreen(
                 AnimatedVisibility(visible = duo3ArticleBar.value) {
                     SettingItemWithSwitch(
                         title = { Text("文章阅读页：更改操作栏样式") },
-                        description = { Text("底栏操作按钮用药丸包裹；分隔赞同/反对按钮并添加动画。") },
+                        description = { Text("底栏使用更明显的按钮底色，并在顶栏显示更多操作入口。") },
                         checked = duo3ArticleActions.value,
                         onCheckedChange = {
                             duo3ArticleActions.value = it

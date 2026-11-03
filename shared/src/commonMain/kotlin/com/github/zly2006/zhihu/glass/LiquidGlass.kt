@@ -92,6 +92,7 @@ fun Modifier.liquidGlass(
     drawBackdrop(
         backdrop = backdrop.layer,
         shape = { shape },
+        shadow = null,
         effects = {
             vibrancy()
             blur(blurRadius.toPx())
