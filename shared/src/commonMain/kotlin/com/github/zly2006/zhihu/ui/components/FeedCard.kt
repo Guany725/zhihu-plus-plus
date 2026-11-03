@@ -32,7 +32,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -343,10 +342,9 @@ private fun FeedCardContent(
                         model = thumbnailUrl,
                         contentDescription = "Thumbnail",
                         modifier = Modifier
-                            .padding(top = 8.dp)
-                            .sizeIn(maxHeight = 80.dp, maxWidth = 128.dp)
+                            .size(80.dp)
                             .clip(MaterialTheme.shapes.small),
-                        contentScale = ContentScale.FillHeight,
+                        contentScale = ContentScale.Crop,
                     )
                 }
             }
@@ -499,15 +497,15 @@ private fun FeedCardContent(
                     }
                 }
             }
-            if (!thumbnailUrl.isNullOrEmpty() && showFeedThumbnail) {
+            if (!thumbnailUrl.isNullOrEmpty() && showFeedThumbnail && !item.isFiltered) {
                 Spacer(modifier = Modifier.width(8.dp))
                 AsyncImage(
                     model = thumbnailUrl,
                     contentDescription = "Thumbnail",
                     modifier = Modifier
-                        .weight(1f)
-                        .sizeIn(maxWidth = 60.dp)
+                        .size(80.dp)
                         .clip(MaterialTheme.shapes.small),
+                    contentScale = ContentScale.Crop,
                 )
             }
         }
