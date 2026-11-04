@@ -363,7 +363,7 @@ fun AppearanceSettingsScreen(
 
     Scaffold(
         modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             LargeTopAppBar(
                 title = { Text("外观与阅读体验") },
@@ -380,7 +380,7 @@ fun AppearanceSettingsScreen(
                 },
                 scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.topAppBarColors().copy(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    containerColor = MaterialTheme.colorScheme.background,
                     scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                 ),
             )
@@ -1780,7 +1780,7 @@ fun AppearanceSettingsScreen(
                 AnimatedVisibility(visible = duo3ArticleBar.value) {
                     SettingItemWithSwitch(
                         title = { Text("文章阅读页：更改操作栏样式") },
-                        description = { Text("底栏使用更明显的按钮底色，操作位置保持一致。") },
+                        description = { Text("底栏使用更明显的按钮底色，并在顶栏显示更多操作入口。") },
                         checked = duo3ArticleActions.value,
                         onCheckedChange = {
                             duo3ArticleActions.value = it
