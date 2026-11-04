@@ -187,10 +187,6 @@ fun FeedCard(
             Card(
                 colors = if (isSelected) {
                     CardDefaults.cardColors(containerColor = selectedContainerColor)
-                } else if (duo3CardAppearance) {
-                    CardDefaults.cardColors().copy(
-                        containerColor = MaterialTheme.colorScheme.surfaceBright,
-                    )
                 } else {
                     CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
                 },

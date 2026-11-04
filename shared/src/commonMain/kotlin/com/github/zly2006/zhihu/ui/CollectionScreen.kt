@@ -159,7 +159,9 @@ fun CollectionScreen(
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
                     .testTag("collection_screen_item_${collection.id}"),
-                elevation = CardDefaults.cardElevation(4.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                shape = MaterialTheme.shapes.large,
+                elevation = CardDefaults.cardElevation(0.dp),
                 onClick = {
                     navigator.onNavigate(CollectionContent(collection.id))
                 },

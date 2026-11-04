@@ -208,7 +208,7 @@ fun AccountSettingScreen(
     CompositionLocalProvider(LocalBringIntoViewSpec provides bringIntoViewSpec) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            containerColor = MaterialTheme.colorScheme.background,
         ) { padding ->
             Column(
                 modifier = Modifier
