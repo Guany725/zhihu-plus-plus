@@ -65,18 +65,22 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.network.NetworkHeaders
+import coil3.network.httpHeaders
+import coil3.request.ImageRequest
 import com.github.zly2006.zhihu.data.DataHolder
 import com.github.zly2006.zhihu.data.Feed
 import com.github.zly2006.zhihu.data.FeedDisplayItem
 import com.github.zly2006.zhihu.data.navDestination
 import com.github.zly2006.zhihu.data.officialBadge
+import com.github.zly2006.zhihu.data.prepareNavigation
 import com.github.zly2006.zhihu.data.sourceLabel
 import com.github.zly2006.zhihu.data.target
 import com.github.zly2006.zhihu.navigation.Account
 import com.github.zly2006.zhihu.navigation.LocalNavigator
 import com.github.zly2006.zhihu.navigation.NavDestination
 import com.github.zly2006.zhihu.navigation.Navigator
-import com.github.zly2006.zhihu.navigation.withReadingQueueSource
 import com.github.zly2006.zhihu.platform.UserMessageDuration
 import com.github.zly2006.zhihu.platform.rememberSettingsStore
 import com.github.zly2006.zhihu.platform.rememberUserMessageSink
@@ -116,6 +120,17 @@ fun FeedCard(
     val settings = rememberSettingsStore()
     val selectedDestination = LocalSelectedContentDestination.current
     var showMenu by remember { mutableStateOf(false) }
+    val imageContext = LocalPlatformContext.current
+    val thumbnailModel = remember(imageContext, thumbnailUrl) {
+        thumbnailUrl?.takeIf { it.isNotBlank() }?.let {
+            ImageRequest
+                .Builder(imageContext)
+                .data(it)
+                // 样本图片在 off 上用默认 UA 返回 403，浏览器 UA 可正常返回原图。
+                .httpHeaders(NetworkHeaders.Builder().set("User-Agent", "Mozilla/5.0").build())
+                .build()
+        }
+    }
     val showFeedThumbnail = remember {
         settings.getBoolean("showFeedThumbnail", true)
     }
@@ -132,7 +147,7 @@ fun FeedCard(
     val isSelected = item.navDestination != null && item.navDestination == selectedDestination
     val selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.55f)
     val performClick: (FeedDisplayItem) -> Unit = { clickedItem ->
-        val destination = clickedItem.navDestination?.withReadingQueueSource(readingQueueSourceId)
+        val destination = clickedItem.prepareNavigation(readingQueueSourceId)
         if (onClick != null) {
             onClick(clickedItem, destination)
         } else {
@@ -161,7 +176,7 @@ fun FeedCard(
                 FeedCardContent(
                     item = item,
                     showFeedThumbnail = showFeedThumbnail,
-                    thumbnailUrl = thumbnailUrl,
+                    thumbnailModel = thumbnailModel,
                     pinImages = pinImages,
                     showMenu = showMenu,
                     onShowMenuChange = { showMenu = it },
@@ -203,7 +218,7 @@ fun FeedCard(
                     FeedCardContent(
                         item = item,
                         showFeedThumbnail = showFeedThumbnail,
-                        thumbnailUrl = thumbnailUrl,
+                        thumbnailModel = thumbnailModel,
                         pinImages = pinImages,
                         showMenu = showMenu,
                         onShowMenuChange = { showMenu = it },
@@ -278,7 +293,7 @@ private fun FeedCardMenuBox(
 private fun FeedCardContent(
     item: FeedDisplayItem,
     showFeedThumbnail: Boolean,
-    thumbnailUrl: String?,
+    thumbnailModel: ImageRequest?,
     pinImages: List<DataHolder.Pin.ContentImage>,
     showMenu: Boolean,
     onShowMenuChange: (Boolean) -> Unit,
@@ -332,10 +347,10 @@ private fun FeedCardContent(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f),
                 )
-                if (!thumbnailUrl.isNullOrEmpty() && showFeedThumbnail && !item.isFiltered) {
+                if (thumbnailModel != null && showFeedThumbnail && !item.isFiltered) {
                     Spacer(modifier = Modifier.width(8.dp))
                     AsyncImage(
-                        model = thumbnailUrl,
+                        model = thumbnailModel,
                         contentDescription = "Thumbnail",
                         modifier = Modifier
                             .size(80.dp)
@@ -493,10 +508,10 @@ private fun FeedCardContent(
                     }
                 }
             }
-            if (!thumbnailUrl.isNullOrEmpty() && showFeedThumbnail && !item.isFiltered) {
+            if (thumbnailModel != null && showFeedThumbnail && !item.isFiltered) {
                 Spacer(modifier = Modifier.width(8.dp))
                 AsyncImage(
-                    model = thumbnailUrl,
+                    model = thumbnailModel,
                     contentDescription = "Thumbnail",
                     modifier = Modifier
                         .size(80.dp)
