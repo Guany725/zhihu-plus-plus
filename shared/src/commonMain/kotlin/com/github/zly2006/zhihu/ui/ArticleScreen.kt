@@ -93,6 +93,10 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -122,6 +126,7 @@ import com.github.zly2006.zhihu.ui.AnswerDoubleTapAction
 import com.github.zly2006.zhihu.ui.article.AigcFlagSheet
 import com.github.zly2006.zhihu.ui.article.ArticleActionBar
 import com.github.zly2006.zhihu.ui.article.ArticleActionsMenu
+import com.github.zly2006.zhihu.ui.article.ArticleLoadingPlaceholder
 import com.github.zly2006.zhihu.ui.article.ArticleSummarySheet
 import com.github.zly2006.zhihu.ui.article.ArticleVideoAttachmentContent
 import com.github.zly2006.zhihu.ui.article.CachedAnswerPreview
@@ -152,6 +157,7 @@ import com.github.zly2006.zhihu.ui.subscreens.DUO3_TIQIAN_MARKDOWN_PREFERENCE_KE
 import com.github.zly2006.zhihu.ui.subscreens.PREF_PAGE_TURN_SWITCH_ANSWER
 import com.github.zly2006.zhihu.util.formatCompactCount
 import com.github.zly2006.zhihu.util.formatFullDateTime
+import com.github.zly2006.zhihu.util.parseEmphasizedHtmlTextWithTheme
 import com.github.zly2006.zhihu.util.smoothGradient
 import com.github.zly2006.zhihu.viewmodel.ArticleViewModel
 import com.github.zly2006.zhihu.viewmodel.addReadHistory
@@ -484,22 +490,34 @@ fun ArticleScreen(
                                 }
                             },
                             title = { expanded ->
-                                Text(
-                                    text = viewModel.title,
-                                    modifier = Modifier
-                                        .padding(if (expanded) PaddingValues(end = 16.dp) else PaddingValues())
-                                        .let {
-                                            if (article.type == ArticleType.Answer) {
-                                                it.clickable {
-                                                    navigator.onNavigate(Question(viewModel.questionId, viewModel.title))
+                                if (viewModel.title.isBlank() && viewModel.isLoading) {
+                                    Column(
+                                        modifier = Modifier.fillMaxWidth().padding(end = 16.dp),
+                                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                                    ) {
+                                        ArticleLoadingPlaceholder(Modifier.fillMaxWidth().height(24.dp))
+                                        if (expanded) {
+                                            ArticleLoadingPlaceholder(Modifier.fillMaxWidth(0.7f).height(24.dp))
+                                        }
+                                    }
+                                } else {
+                                    Text(
+                                        text = viewModel.title,
+                                        modifier = Modifier
+                                            .padding(if (expanded) PaddingValues(end = 16.dp) else PaddingValues())
+                                            .let {
+                                                if (article.type == ArticleType.Answer && viewModel.questionId != 0L) {
+                                                    it.clickable {
+                                                        navigator.onNavigate(Question(viewModel.questionId, viewModel.title))
+                                                    }
+                                                } else {
+                                                    it
                                                 }
-                                            } else {
-                                                it
-                                            }
-                                        },
-                                    maxLines = if (expanded) Int.MAX_VALUE else 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
+                                            },
+                                        maxLines = if (expanded) Int.MAX_VALUE else 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
                             },
                             subtitle = { expanded ->
                                 Row(
@@ -508,7 +526,7 @@ fun ArticleScreen(
                                         .padding(if (expanded) PaddingValues(vertical = 16.dp) else PaddingValues(top = 2.dp, bottom = 8.dp))
                                         .padding(end = 16.dp)
                                         .fillMaxWidth()
-                                        .clickable {
+                                        .clickable(enabled = viewModel.authorId.isNotBlank() || viewModel.authorUrlToken.isNotBlank()) {
                                             navigator.onNavigate(
                                                 com.github.zly2006.zhihu.navigation.Person(
                                                     id = viewModel.authorId,
@@ -527,12 +545,18 @@ fun ArticleScreen(
                                                 .clip(CircleShape),
                                         )
                                     } else {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(if (expanded) 40.dp else 20.dp)
-                                                .clip(CircleShape)
-                                                .background(MaterialTheme.colorScheme.surfaceVariant),
-                                        )
+                                        if (viewModel.isLoading) {
+                                            ArticleLoadingPlaceholder(
+                                                Modifier.size(if (expanded) 40.dp else 20.dp).clip(CircleShape),
+                                            )
+                                        } else {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(if (expanded) 40.dp else 20.dp)
+                                                    .clip(CircleShape)
+                                                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                                            )
+                                        }
                                     }
 
                                     Spacer(modifier = Modifier.width(if (expanded) 8.dp else 4.dp))
@@ -541,14 +565,26 @@ fun ArticleScreen(
                                         modifier = Modifier.weight(1f),
                                     ) {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Text(
-                                                text = viewModel.authorName,
-                                                style = if (expanded) MaterialTheme.typography.titleSmall else MaterialTheme.typography.labelMedium,
-                                                color = if (expanded) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis,
-                                                modifier = Modifier.weight(1f, fill = false),
-                                            )
+                                            if (viewModel.authorName.isBlank() && viewModel.isLoading) {
+                                                ArticleLoadingPlaceholder(
+                                                    Modifier
+                                                        .width(96.dp)
+                                                        .height(
+                                                            with(density) {
+                                                                (if (expanded) MaterialTheme.typography.titleSmall else MaterialTheme.typography.labelMedium).lineHeight.toDp()
+                                                            },
+                                                        ).padding(vertical = 4.dp),
+                                                )
+                                            } else {
+                                                Text(
+                                                    text = viewModel.authorName,
+                                                    style = if (expanded) MaterialTheme.typography.titleSmall else MaterialTheme.typography.labelMedium,
+                                                    color = if (expanded) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                    modifier = Modifier.weight(1f, fill = false),
+                                                )
+                                            }
                                             if (viewModel.authorBadge != null) {
                                                 Spacer(modifier = Modifier.width(4.dp))
                                                 AuthorBadge(
@@ -557,7 +593,19 @@ fun ArticleScreen(
                                                 )
                                             }
                                         }
-                                        if (viewModel.authorBio.isNotEmpty() && expanded) {
+                                        if (expanded && viewModel.authorBio.isBlank() && viewModel.isLoading) {
+                                            ArticleLoadingPlaceholder(
+                                                Modifier
+                                                    .fillMaxWidth(0.65f)
+                                                    .height(
+                                                        with(density) {
+                                                            MaterialTheme.typography.bodyMedium.lineHeight
+                                                                .toDp()
+                                                        },
+                                                    ).padding(vertical = 4.dp)
+                                                    .testTag("article_author_bio_skeleton"),
+                                            )
+                                        } else if (viewModel.authorBio.isNotEmpty() && expanded) {
                                             Text(
                                                 text = viewModel.authorBio,
                                                 style = MaterialTheme.typography.bodyMedium,
@@ -667,7 +715,7 @@ fun ArticleScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable {
+                                    .clickable(enabled = viewModel.authorId.isNotBlank() || viewModel.authorUrlToken.isNotBlank()) {
                                         navigator.onNavigate(
                                             com.github.zly2006.zhihu.navigation.Person(
                                                 id = viewModel.authorId,
@@ -728,10 +776,16 @@ fun ArticleScreen(
                                 ArticleType.Answer -> "回答"
                                 ArticleType.Article -> "文章"
                             }
-                            val hasVotersSocialCredit = viewModel.votersTotal > 0
-                            if (!hasVotersSocialCredit && viewModel.aigcSupportVoterCount <= 0) return
                             Spacer(modifier = Modifier.height(8.dp))
-                            if (hasVotersSocialCredit) {
+                            // 切换回答时正文先从缓存恢复，赞同信息稍后加载；先预留一行，避免正文跳动。
+                            Box(
+                                modifier = Modifier.fillMaxWidth().height(
+                                    with(density) {
+                                        MaterialTheme.typography.bodySmall.lineHeight
+                                            .toDp()
+                                    },
+                                ),
+                            ) {
                                 val text = viewModel.votersSocialText.ifBlank {
                                     "${formatCompactCount(viewModel.votersTotal)} 人赞同了该$contentLabel"
                                 }
@@ -750,17 +804,59 @@ fun ArticleScreen(
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = votersTextModifier,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
                                 )
                             }
                             if (viewModel.aigcSupportVoterCount > 0) {
-                                if (hasVotersSocialCredit) {
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                }
+                                Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = "有 ${formatCompactCount(viewModel.aigcSupportVoterCount)} 人认为此${contentLabel}包含AIGC内容",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.error,
                                 )
+                            }
+                        }
+
+                        if (viewModel.content.isEmpty() && viewModel.attachment == null) {
+                            if (viewModel.previewContent.isNotBlank() && !(useWebView && isLegacyWebViewSupported)) {
+                                RenderMarkdown(
+                                    html = viewModel.previewContent,
+                                    modifier = Modifier.testTag("article_preview").articleMarkdownSelectionWorkaround(),
+                                    scrollState = scrollState,
+                                    selectable = true,
+                                    enableScroll = false,
+                                    useTiqianRenderer = useTiqianMarkdown,
+                                )
+                                Spacer(Modifier.height(16.dp))
+                            } else if (viewModel.previewExcerpt.isNotBlank()) {
+                                Text(
+                                    text = parseEmphasizedHtmlTextWithTheme(viewModel.previewExcerpt),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.fillMaxWidth().testTag("article_preview"),
+                                )
+                                Spacer(Modifier.height(16.dp))
+                            }
+                            if (viewModel.isLoading) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .testTag("article_body_skeleton")
+                                        .semantics {
+                                            contentDescription = "正在加载全文"
+                                            progressBarRangeInfo = ProgressBarRangeInfo.Indeterminate
+                                        },
+                                    verticalArrangement = Arrangement.spacedBy(24.dp),
+                                ) {
+                                    repeat(2) {
+                                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                            repeat(3) {
+                                                ArticleLoadingPlaceholder(Modifier.fillMaxWidth().height(16.dp))
+                                            }
+                                            ArticleLoadingPlaceholder(Modifier.fillMaxWidth(0.6f).height(16.dp))
+                                        }
+                                    }
+                                }
                             }
                         }
 
@@ -780,35 +876,28 @@ fun ArticleScreen(
                                 }
                                 Spacer(Modifier.height(12.dp))
                             }
-                            val hasPinnedDate = pinAnswerDate
-                            val hasSocialCredit = viewModel.votersTotal > 0 || viewModel.aigcSupportVoterCount > 0
                             val endorsements = viewModel.endorsements
-                            val hasEndorsements = endorsements.isNotEmpty()
-                            if (hasPinnedDate || hasSocialCredit || hasEndorsements) {
-                                Column(
-                                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                                    horizontalAlignment = Alignment.Start,
-                                ) {
-                                    if (hasPinnedDate) {
-                                        DateTexts()
-                                    }
-                                    ArticleVotersSocialCredit()
-                                    if (hasEndorsements) {
-                                        if (hasPinnedDate || hasSocialCredit) {
-                                            Spacer(modifier = Modifier.height(8.dp))
-                                        }
-                                        FlowRow(
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                                        ) {
-                                            endorsements.forEach { endorsement ->
-                                                AnswerEndorsementChip(endorsement)
-                                            }
+                            Column(
+                                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                                horizontalAlignment = Alignment.Start,
+                            ) {
+                                if (pinAnswerDate) {
+                                    DateTexts()
+                                }
+                                ArticleVotersSocialCredit()
+                                if (endorsements.isNotEmpty()) {
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    FlowRow(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    ) {
+                                        endorsements.forEach { endorsement ->
+                                            AnswerEndorsementChip(endorsement)
                                         }
                                     }
                                 }
-                                Spacer(modifier = Modifier.height(16.dp))
                             }
+                            Spacer(modifier = Modifier.height(16.dp))
                             if (useWebView && isLegacyWebViewSupported) {
                                 // WebView 正文渲染已经废弃，只保留为紧急回退路径；正文外 UI 不再为它单独分支。
                                 ArticleWebViewContent(
