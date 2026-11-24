@@ -191,7 +191,7 @@ fun IdentityManagementScreen() {
                 .fillMaxSize()
                 .testTag(IDENTITY_MANAGEMENT_SCREEN_TAG)
                 .nestedScroll(scrollBehavior.nestedScrollConnection),
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            containerColor = MaterialTheme.colorScheme.background,
             topBar = {
                 LargeTopAppBar(
                     title = { Text("身份管理") },
@@ -208,7 +208,7 @@ fun IdentityManagementScreen() {
                     },
                     scrollBehavior = scrollBehavior,
                     colors = TopAppBarDefaults.topAppBarColors().copy(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        containerColor = MaterialTheme.colorScheme.background,
                         scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     ),
                 )

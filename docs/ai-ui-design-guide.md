@@ -53,6 +53,8 @@ URL 解析集中在 `resolveContent()`。支持知乎问题、回答、文章、
 
 信息流卡片由 `FeedCard` 读取 `showFeedThumbnail`、`feedCardStyle`、`duo3_card_appearance`、`duo3_card_layout`、`duo3_card_large_title`。改这些 key 的语义时要同时查主页、关注、热榜、历史和搜索结果等复用卡片的页面。
 
+统一外观使用 `ZhihuTheme` 的 shapes 层级：图片 12dp、内容卡片与设置分组 24dp、弹层 28dp；胶囊控件继续使用百分比圆角。信息流默认 `card`，已有 `divider` 选择不迁移。卡片采用 16dp 内边距、12dp 卡片间距和无阴影的 `surfaceContainerLow`，Duo3 外观只切换为 `surfaceBright` 底色。卡片高度随内容与字号增长，摘要行数控制信息密度，不对整个卡片设置固定高度上限。首页卡片、玻璃导航栏和回答操作栏左右均留 16dp；玻璃以较弱折射和统一表面色维持控件可读性。
+
 文章、问题详情和想法正文会根据 `ARTICLE_USE_WEBVIEW_PREFERENCE_KEY` 在 WebView 与 Compose Markdown 之间切换；该常量当前值是 `webviewRender`。WebView 正文渲染只作为废弃路径保留，不再接受新功能；阅读体验新能力只接入 Compose Markdown 路径。Compose Markdown 路径依赖 `RenderMarkdown` 和 `SegmentedText` 的字号、行高和段间距设置。
 
 ## 设置项影响图

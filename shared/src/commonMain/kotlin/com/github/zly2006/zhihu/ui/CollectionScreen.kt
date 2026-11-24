@@ -146,9 +146,12 @@ fun CollectionScreen(
             listState = listState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
                 .pageTurnViewportWithGuide(pageTurnTarget)
                 .testTag(COLLECTION_SCREEN_LIST_TAG),
+            contentPadding = PaddingValues(
+                top = innerPadding.calculateTopPadding(),
+                bottom = innerPadding.calculateBottomPadding() + 8.dp,
+            ),
             footer = ProgressIndicatorFooter,
         ) { collection ->
             Card(
@@ -156,7 +159,9 @@ fun CollectionScreen(
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
                     .testTag("collection_screen_item_${collection.id}"),
-                elevation = CardDefaults.cardElevation(4.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                shape = MaterialTheme.shapes.large,
+                elevation = CardDefaults.cardElevation(0.dp),
                 onClick = {
                     navigator.onNavigate(CollectionContent(collection.id))
                 },

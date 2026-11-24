@@ -170,6 +170,8 @@ kotlin {
             implementation(compose.materialIconsExtended)
             implementation(compose.ui)
             implementation(compose.components.resources)
+            // 液态玻璃底栏的背景采样与透镜折射效果（Kyant0/AndroidLiquidGlass 的 backdrop 库）。
+            implementation("io.github.kyant0:backdrop:2.0.0")
             implementation("io.coil-kt.coil3:coil-compose:3.5.0")
             implementation("io.coil-kt.coil3:coil-network-core:3.5.0")
             implementation("org.jetbrains.androidx.navigation:navigation-compose:2.9.2")
